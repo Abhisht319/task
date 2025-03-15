@@ -17,10 +17,14 @@ class TaskController extends Controller
         $userId = $request->header('user_id');
         
         $user = User::where('id',$userId)->first();
+        
 
-        dd($user->role_id);
+        if($user->role_id == 1){
+            $data = Task::whereNull('deleted_at')->get();
+        } else{
+            $data = Task::whereNull('deleted_at')->where('user_id',$user->id)->get();
+        }
 
-        $data = Task::whereNull('deleted_at')->get();
 
         $response = [
 

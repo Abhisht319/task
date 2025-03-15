@@ -62,6 +62,7 @@
                 </button>
             </div>
         </form>
+        <p class="mt-4 text-center text-gray-600"><a href="{{ config('app.url') }}/login" class="text-primary-500 hover:text-primary-600">Sign In</a></p>
     </div>
 
     <script>

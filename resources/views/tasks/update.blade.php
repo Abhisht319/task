@@ -23,7 +23,7 @@
                 <div class="px-4 py-2 bg-primary-700">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
+                        <span> <a href="{{ config('app.url') }}/taskdata">Dashboard</a> </span>
                     </div>
                 </div>
             </div>
@@ -164,7 +164,6 @@
             .then(data => {
                 if (data.success) {
                     // alert("Login successful!");
-                    localStorage.setItem('token', data.data.token);
                     window.location.href = '{{ config('app.url') }}/taskdata';
 
                 } else {
@@ -174,7 +173,7 @@
             })
             .catch(error => {
                 // Handle network or other errors
-                alert("An error occurred: " + error.message);
+                // alert("An error occurred: " + error.message);
                 console.error(error);
             });
     });
@@ -213,7 +212,7 @@
                 }
             })
             .catch(error => {
-                console.error("An error occurred:", error);
+                // console.error("An error occurred:", error);
                 // window.location.href = '{{ config('app.url') }}/login';
             });
     }

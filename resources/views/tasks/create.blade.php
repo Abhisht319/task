@@ -23,7 +23,7 @@
                 <div class="px-4 py-2 bg-primary-700">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
+                        <span> <a href="{{ config('app.url') }}/taskdata">Dashboard</a> </span>
                     </div>
                 </div>
             </div>
@@ -112,7 +112,7 @@
 
                             <!-- Buttons -->
                             <div class="flex justify-between">
-                                <input type="text" id="user_id" name="user_id">
+                                <input type="hidden" id="user_id" name="user_id">
                                 <button type="button" id="closeModalBtn"
                                     class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
                                     Cancel
@@ -159,7 +159,6 @@
             .then(data => {
                 if (data.success) {
                     // alert("Login successful!");
-                    localStorage.setItem('token', data.data.token);
                     window.location.href = '{{ config('app.url') }}/taskdata';
 
                 } else {

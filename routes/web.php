@@ -21,7 +21,7 @@ Route::controller(RegisterController::class)->group(function(){
     Route::get('register', 'showRegistrationForm');
     Route::post('register', 'register')->name('register');
 
-    Route::get('login', 'showLoginForm')->name('login');
+    Route::get('/', 'showLoginForm')->name('login');
     Route::post('login', 'login');
     Route::get('taskdata', 'taskdata');
     Route::get('taskcreate', 'taskcreate');

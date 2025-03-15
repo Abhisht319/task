@@ -25,7 +25,7 @@
             <button type="submit" class="w-full bg-primary-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500">Submit</button>
         </form>
 
-        <p class="mt-4 text-center text-gray-600">Don't have an account? <a href="#" class="text-primary-500 hover:text-primary-600">Sign Up</a></p>
+        <p class="mt-4 text-center text-gray-600">Don't have an account? <a href="{{ config('app.url') }}/register" class="text-primary-500 hover:text-primary-600">Sign Up</a></p>
     </div>
 
     <script>

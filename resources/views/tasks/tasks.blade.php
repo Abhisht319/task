@@ -23,7 +23,7 @@
                 <div class="px-4 py-2 bg-primary-700">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
+                        <span> <a href="{{ config('app.url') }}/taskdata">Dashboard</a> </span>
                     </div>
                 </div>
             </div>
@@ -60,8 +60,9 @@
                                 <i class="fas fa-bell"></i>
                                 <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                             </button>
-                            <button class="relative p-2 text-gray-500 hover:text-gray-700 focus:outline-none">
-                                <i class="fas fa-envelope"></i>
+                            <button onclick="logout()"
+                                class="relative p-2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                                Logout
                                 <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                             </button>
                         </div>
@@ -74,6 +75,13 @@
                 <div class="mb-6">
                     {{-- <h2 class="text-2xl font-semibold text-gray-800">Dashboard Overview</h2>
                     <p class="text-gray-600">Welcome back, John! Here's what's happening today.</p> --}}
+                    <span>
+                        <a href="{{ config('app.url') }}/taskcreate"
+                            class="inline-block px-2 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-600 transition duration-300">
+                            Create Task
+                        </a>
+                    </span>
+
                 </div>
 
                 <div class="overflow-x-auto bg-white rounded-lg shadow-md">
@@ -102,120 +110,151 @@
 </html>
 
 <script>
-function fetchTasks() {
-    const token = localStorage.getItem('token');
-    const user_id = localStorage.getItem('user_id');
+    function fetchTasks() {
+        const token = localStorage.getItem('token');
+        const user_id = localStorage.getItem('user_id');
 
-    if (!token) {
-        window.location.href = '{{ config('app.url') }}/login';
-        return;
+        if (!token) {
+            window.location.href = '{{ config('app.url') }}/login';
+            return;
+        }
+
+        fetch('{{ config('app.url') }}/api/tasks', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'user_id': user_id,
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const tasks = data.data;
+                    const taskTableBody = document.getElementById('task_table_body');
+                    taskTableBody.innerHTML = '';
+
+                    tasks.forEach(task => {
+                        const row = document.createElement('tr');
+
+                        const titleCell = document.createElement('td');
+                        titleCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
+                        titleCell.textContent = task.title;
+
+                        const descriptionCell = document.createElement('td');
+                        descriptionCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
+                        descriptionCell.textContent = task.description;
+
+                        const statusCell = document.createElement('td');
+                        statusCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
+                        statusCell.textContent =
+                            task.status === '0' ? 'Pending' :
+                            task.status === '1' ? 'In Progress' :
+                            task.status === '2' ? 'Completed' : 'Unknown';
+
+                        const createdAtCell = document.createElement('td');
+                        createdAtCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
+                        createdAtCell.textContent = new Date(task.created_at).toLocaleString();
+
+                        const actionCell = document.createElement('td');
+                        actionCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
+
+
+                        const editButton = document.createElement('button');
+                        editButton.setAttribute('data-id', task.id);
+                        editButton.classList.add('px-4', 'py-2', 'bg-blue-500', 'text-white', 'rounded',
+                            'mr-2');
+                        editButton.textContent = 'Edit';
+                        editButton.addEventListener('click', () => {
+                            window.location.href = '{{ config('app.url') }}/taskedit/' + task.id;
+
+                        });
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.classList.add('px-4', 'py-2', 'bg-red-500', 'text-white', 'rounded');
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', () => {
+                            deleteTask(task.id)
+                        });
+
+                        actionCell.appendChild(editButton);
+                        actionCell.appendChild(deleteButton);
+                        row.appendChild(titleCell);
+                        row.appendChild(descriptionCell);
+                        row.appendChild(statusCell);
+                        row.appendChild(createdAtCell);
+                        row.appendChild(actionCell);
+
+                        taskTableBody.appendChild(row);
+                    });
+                } else {
+                    alert("Error fetching tasks: " + data.message);
+                }
+            })
+            .catch(error => {
+                // console.error("An error occurred:", error);
+                // alert("An error occurred while fetching tasks.");
+                // window.location.href = '{{ config('app.url') }}/login';
+            });
     }
 
-    fetch('{{ config('app.url') }}/api/tasks', {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'user_id': user_id,
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const tasks = data.data;
-            const taskTableBody = document.getElementById('task_table_body');
-            taskTableBody.innerHTML = ''; 
+    // Optional: Function to handle task deletion
+    function deleteTask(taskId) {
+        const token = localStorage.getItem('token');
 
-            tasks.forEach(task => {
-                const row = document.createElement('tr');
-                
-                const titleCell = document.createElement('td');
-                titleCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
-                titleCell.textContent = task.title;
-
-                const descriptionCell = document.createElement('td');
-                descriptionCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
-                descriptionCell.textContent = task.description;
-
-                const statusCell = document.createElement('td');
-                statusCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
-                statusCell.textContent = task.status === '0' ? 'Pending' : 'Completed';                 
-
-                const createdAtCell = document.createElement('td');
-                createdAtCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
-                createdAtCell.textContent = new Date(task.created_at).toLocaleString(); 
-                
-                const actionCell = document.createElement('td');
-                actionCell.classList.add('px-4', 'py-2', 'text-sm', 'text-gray-700');
-                
-
-                const editButton = document.createElement('button');
-                editButton.setAttribute('data-id', task.id);
-                editButton.classList.add('px-4', 'py-2', 'bg-blue-500', 'text-white', 'rounded', 'mr-2');
-                editButton.textContent = 'Edit';
-                editButton.addEventListener('click', () => {
-                    window.location.href = '{{ config('app.url') }}/taskedit/' + task.id;
-
-                });
-                
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('px-4', 'py-2', 'bg-red-500', 'text-white', 'rounded');
-                deleteButton.textContent = 'Delete';
-                deleteButton.addEventListener('click', () => {
-                    deleteTask(task.id)
-                });
-                
-                actionCell.appendChild(editButton);
-                actionCell.appendChild(deleteButton);
-                row.appendChild(titleCell);
-                row.appendChild(descriptionCell);
-                row.appendChild(statusCell);
-                row.appendChild(createdAtCell);
-                row.appendChild(actionCell);
-                
-                taskTableBody.appendChild(row);
+        fetch('{{ config('app.url') }}/api/tasks/delete/' + taskId, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    fetchTasks();
+                } else {
+                    alert("Error deleting task: " + data.message);
+                }
+            })
+            .catch(error => {
+                // console.error("An error occurred:", error);
+                // alert("An error occurred while deleting the task.");
             });
+    }
+
+    window.onload = fetchTasks;
+
+    function logout() {
+
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            console.log('No token found');
+            // Redirect to login page or handle accordingly
         } else {
-            alert("Error fetching tasks: " + data.message);
+            fetch('{{ config('app.url') }}/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === 'Successfully logged out') {
+                        // Clear the token from local storage
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user_id');
+                        window.location.href = '/'; // Redirect to login page or home page
+                    }
+                })
+                .catch(error => {
+                    console.error('Error logging out:', error);
+                });
         }
-    })
-    .catch(error => {
-        // console.error("An error occurred:", error);
-        // alert("An error occurred while fetching tasks.");
-        // window.location.href = '{{ config('app.url') }}/login';
-    });
-}
 
-// Optional: Function to handle task deletion
-function deleteTask(taskId) {
-    const token = localStorage.getItem('token');
-
-    fetch('{{ config('app.url') }}/api/tasks/delete/' + taskId, {
-        method: 'DELETE',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(`Task with ID ${taskId} deleted.`);
-            const row = document.getElementById('task_' + taskId);
-            row.remove();
-            fetchTasks();
-        } else {
-            alert("Error deleting task: " + data.message);
-        }
-    })
-    .catch(error => {
-        console.error("An error occurred:", error);
-        alert("An error occurred while deleting the task.");
-    });
-}
-
-window.onload = fetchTasks;
-
+    }
 </script>
 
 

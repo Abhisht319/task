@@ -23,6 +23,7 @@ Route::controller(RegisterController::class)->group(function(){
     Route::post('register', 'register')->name('register');
     Route::get('login', 'showLoginForm')->name('login');
     Route::post('login', 'login');
+    Route::post('logout', 'logout');
 });
 
         
